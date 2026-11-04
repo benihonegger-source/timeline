@@ -1,0 +1,729 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Projekt-Zeitstrahl</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: weiße Arbeitsfläche, oben Projektkopf, Zeitstrahl als Hauptbühne, darunter Phasen und nächste Schritte in zwei Spalten */
+:root{
+  --bg:#ffffff; --surface:#f5f7f6; --ink:#16201c; --muted:#66716c; --line:#e3e8e6; --line-strong:#cbd3cf;
+  --accent:#0e7a5f; --accent-soft:#e3f2ed; --on-accent:#ffffff; --danger:#c2412d;
+  --p1:#1f8a70; --p2:#3a6ea5; --p3:#c98419; --p4:#cf5b3a; --p5:#7b5ea7;
+  --font-display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --font-body:"Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111614; --surface:#18201d; --ink:#e8eeeb; --muted:#93a19b; --line:#26302c; --line-strong:#38443f;
+  --accent:#3cc29a; --accent-soft:#173a30; --on-accent:#08130f; --danger:#ef7a64;
+  --p1:#3cc29a; --p2:#6c9fd8; --p3:#e2a643; --p4:#ec8463; --p5:#a68ad0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111614; --surface:#18201d; --ink:#e8eeeb; --muted:#93a19b; --line:#26302c; --line-strong:#38443f;
+  --accent:#3cc29a; --accent-soft:#173a30; --on-accent:#08130f; --danger:#ef7a64;
+  --p1:#3cc29a; --p2:#6c9fd8; --p3:#e2a643; --p4:#ec8463; --p5:#a68ad0; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:0 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.01em}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* Top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding-block:14px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:18px;margin-right:auto}
+.brand svg{flex:none}
+.top-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+button,select,input,textarea{font:inherit;color:inherit}
+.btn{border:1px solid var(--line-strong);background:var(--bg);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:500;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--danger)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select{border:1px solid var(--line-strong);background:var(--bg);border-radius:8px;padding:8px 10px;font-size:14px;max-width:240px}
+
+input[type=text],input[type=date],textarea{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px;width:100%;min-width:0;font-size:14px}
+input:hover,textarea:hover{border-color:var(--line-strong)}
+input:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{resize:vertical;min-height:84px;line-height:1.5}
+
+/* Project head */
+.head{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:28px;align-items:end;padding-top:8px}
+.title-input{font-family:var(--font-display);font-weight:700;font-size:clamp(26px,4vw,40px);border:none !important;padding:0 !important;box-shadow:none !important;letter-spacing:-.02em;background:transparent}
+.meta{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:14px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.example-tag{display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600;border-radius:99px;padding:3px 10px;margin-bottom:8px}
+.progress{display:flex;flex-direction:column;gap:8px}
+.progress-num{font-family:var(--font-display);font-size:44px;font-weight:700;line-height:1}
+.progress-num small{font-size:16px;color:var(--muted);font-weight:500;margin-left:4px}
+.bar{height:8px;border-radius:99px;background:var(--surface);overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.progress-sub{color:var(--muted);font-size:13px}
+
+/* Timeline */
+.stage{border:1px solid var(--line);border-radius:14px;padding:20px 0 14px;background:var(--bg)}
+.stage-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:baseline;padding:0 20px 10px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.scroller{overflow-x:auto;padding:0 20px}
+#tl{display:block}
+#tl text{font-family:var(--font-body)}
+.empty-tl{padding:40px 20px;text-align:center;color:var(--muted)}
+
+/* Panels */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start}
+.panel{display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.panel-head h2{font-size:20px}
+.hint{color:var(--muted);font-size:13px;margin:0}
+.rows{display:flex;flex-direction:column;gap:8px}
+.row{display:grid;gap:8px;align-items:center;padding:8px;border-radius:var(--r);background:var(--surface)}
+.row.phase{grid-template-columns:14px minmax(0,1fr) 130px 130px 32px}
+.row.ms{grid-template-columns:14px minmax(0,1fr) 130px 32px}
+.swatch{width:14px;height:14px;border-radius:4px;border:none;cursor:pointer;padding:0}
+.ms-mark{width:11px;height:11px;transform:rotate(45deg);background:var(--ink);margin-left:2px}
+.sub-head{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.sub-head h3{font-size:15px}
+
+.composer{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--line);border-radius:var(--r)}
+.composer-row{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:8px;align-items:end}
+.steps{display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:28px minmax(0,1fr) 32px;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);align-items:start}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:12px;font-family:var(--font-mono);font-weight:500;cursor:pointer;border:none}
+.step.done .step-num{background:var(--accent);color:var(--on-accent)}
+.step.done .step-text{text-decoration:line-through;color:var(--muted)}
+.step-text{white-space:pre-wrap;overflow-wrap:anywhere}
+.step-meta{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--muted);margin-top:4px}
+.chip{border:1px solid var(--line-strong);border-radius:99px;padding:1px 8px}
+.chip.late{border-color:var(--danger);color:var(--danger)}
+.notes textarea{min-height:110px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+.save-state{font-size:12px;color:var(--muted)}
+
+.confirm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;background:var(--surface);border-radius:8px;padding:6px 10px}
+
+@media (max-width:860px){
+  .head{grid-template-columns:1fr}
+  .meta{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cols{grid-template-columns:1fr}
+}
+@media (max-width:480px){
+  .row.phase{grid-template-columns:14px minmax(0,1fr) 32px}
+  .row.phase .d{grid-column:2 / span 2}
+  .row.ms{grid-template-columns:14px minmax(0,1fr) 32px}
+  .row.ms .d{grid-column:2 / span 2}
+  .composer-row{grid-template-columns:1fr 1fr}
+  .composer-row .btn{grid-column:1 / -1;justify-content:center}
+  .brand{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="brand">
+    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="1" y="12" width="24" height="2" rx="1" fill="var(--ink)"/><circle cx="6" cy="13" r="4" fill="var(--accent)"/><rect x="15" y="9" width="8" height="8" rx="1.5" transform="rotate(45 19 13)" fill="var(--ink)"/></svg>
+    Projekt-Zeitstrahl
+  </div>
+  <div class="top-actions">
+    <label for="projSel" class="label" style="position:absolute;left:-9999px">Projekt wählen</label>
+    <select id="projSel" aria-label="Projekt wählen"></select>
+    <button class="btn" id="newProj" type="button">+ Neues Projekt</button>
+    <button class="btn primary" id="pdfBtn" type="button">
+      <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 12v2.5h12V12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      PDF exportieren
+    </button>
+  </div>
+</header>
+
+<main class="wrap" style="margin-top:20px">
+  <section class="head">
+    <div style="min-width:0">
+      <span class="example-tag" id="exTag" hidden>Beispielprojekt · wird erst gespeichert, wenn du etwas änderst</span>
+      <input type="text" id="pName" class="title-input" aria-label="Projektname" placeholder="Projektname">
+      <div class="meta">
+        <div class="field"><label class="label" for="pKlasse">Klasse</label><input type="text" id="pKlasse" placeholder="z. B. 6a"></div>
+        <div class="field"><label class="label" for="pFach">Fach</label><input type="text" id="pFach" placeholder="z. B. NMG"></div>
+        <div class="field"><label class="label" for="pLp">Lehrperson</label><input type="text" id="pLp" placeholder="Name"></div>
+        <div class="field"><label class="label" for="pStart">Start</label><input type="date" id="pStart"></div>
+        <div class="field"><label class="label" for="pEnd">Ende</label><input type="date" id="pEnd"></div>
+      </div>
+    </div>
+    <div class="progress" aria-live="polite">
+      <span class="label">Projektzeit verstrichen</span>
+      <div class="progress-num mono" id="progNum">0<small>%</small></div>
+      <div class="bar"><i id="progBar" style="width:0"></i></div>
+      <div class="progress-sub" id="progSub"></div>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="Zeitstrahl">
+    <div class="stage-head">
+      <h2 style="font-size:18px">Zeitstrahl</h2>
+      <div class="legend">
+        <span><svg width="22" height="10"><rect width="22" height="10" rx="3" fill="var(--p1)"/></svg>Phase</span>
+        <span><svg width="12" height="12"><rect x="2" y="2" width="8" height="8" transform="rotate(45 6 6)" fill="var(--ink)"/></svg>Meilenstein</span>
+        <span><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="var(--ink)"/></svg>Nächster Schritt</span>
+        <span><svg width="14" height="12"><line x1="7" y1="0" x2="7" y2="12" stroke="var(--accent)" stroke-width="2"/></svg>Heute</span>
+      </div>
+    </div>
+    <div class="scroller"><svg id="tl" role="img" aria-label="Zeitstrahl des Projekts"></svg></div>
+  </section>
+
+  <section class="cols">
+    <div class="panel">
+      <div class="panel-head"><h2>Phasen &amp; Meilensteine</h2><span class="save-state" id="saveState"></span></div>
+      <div id="delWrap"><button class="btn ghost" id="delProj" type="button" style="padding:0;font-size:13px">Projekt löschen</button></div>
+      <div class="sub-head"><h3>Phasen</h3><button class="btn" id="addPhase" type="button">+ Phase</button></div>
+      <div class="rows" id="phaseRows"></div>
+      <div class="sub-head"><h3>Meilensteine</h3><button class="btn" id="addMs" type="button">+ Meilenstein</button></div>
+      <div class="rows" id="msRows"></div>
+      <div class="notes field" style="margin-top:8px">
+        <label class="label" for="pNotes">Notizen für den Bericht</label>
+        <textarea id="pNotes" placeholder="Ziele, Kompetenzen, Beobachtungen – erscheint im PDF"></textarea>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>Nächste Schritte</h2><span class="hint" id="stepCount"></span></div>
+      <form class="composer" id="stepForm">
+        <label class="label" for="sText">Was steht als Nächstes an?</label>
+        <textarea id="sText" placeholder="z. B. Gruppen stellen ihre Pflanzplanung vor und holen Feedback ein" required></textarea>
+        <div class="composer-row">
+          <div class="field"><label class="label" for="sDate">Bis wann</label><input type="date" id="sDate" required></div>
+          <div class="field"><label class="label" for="sWho">Wer</label><input type="text" id="sWho" placeholder="Klasse, Gruppe, Lehrperson …"></div>
+          <button class="btn primary" type="submit">Hinzufügen</button>
+        </div>
+      </form>
+      <p class="hint">Tippe auf die Nummer, um einen Schritt als erledigt zu markieren. Die Nummern folgen dem Datum.</p>
+      <div class="steps" id="stepList"></div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function(){
+const DAY=86400000;
+const PHASE_KEYS=['p1','p2','p3','p4','p5'];
+const PDF_HEX={p1:'#1f8a70',p2:'#3a6ea5',p3:'#c98419',p4:'#cf5b3a',p5:'#7b5ea7'};
+const MONTHS=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const MONTHS_LONG=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const $=id=>document.getElementById(id);
+const uid=()=>Math.random().toString(36).slice(2,10);
+const toMs=s=>{if(!s)return NaN;const [y,m,d]=s.split('-').map(Number);return Date.UTC(y,m-1,d)};
+const iso=ms=>new Date(ms).toISOString().slice(0,10);
+const todayMs=()=>{const n=new Date();return Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())};
+const fmt=s=>{const ms=toMs(s);if(isNaN(ms))return '–';const d=new Date(ms);return d.getUTCDate()+'. '+MONTHS[d.getUTCMonth()]+'.'};
+const fmtLong=ms=>{const d=new Date(ms);return d.getUTCDate()+'. '+MONTHS_LONG[d.getUTCMonth()]+' '+d.getUTCFullYear()};
+function isoWeek(ms){const d=new Date(ms);const day=(d.getUTCDay()+6)%7;d.setUTCDate(d.getUTCDate()-day+3);const fy=new Date(Date.UTC(d.getUTCFullYear(),0,4));return 1+Math.round(((d-fy)/DAY-3+((fy.getUTCDay()+6)%7))/7)}
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+/* ---------- Beispiel ---------- */
+function exampleProject(){
+  const t=todayMs(), d=n=>iso(t+n*DAY);
+  return {id:'beispiel',example:true,name:'Projektwoche: Unser Schulgarten',klasse:'5b',fach:'NMG',lehrperson:'',
+    start:d(-15),end:d(45),
+    notes:'Ziel: Die Klasse plant und pflegt ein eigenes Hochbeet. Schwerpunkte: Recherchieren, im Team planen, Ergebnisse präsentieren.',
+    phases:[
+      {id:uid(),title:'Einstieg & Ideen',start:d(-15),end:d(-6),color:'p1'},
+      {id:uid(),title:'Recherche in Gruppen',start:d(-7),end:d(6),color:'p2'},
+      {id:uid(),title:'Planung Hochbeet',start:d(4),end:d(17),color:'p3'},
+      {id:uid(),title:'Umsetzung & Pflege',start:d(15),end:d(38),color:'p4'},
+      {id:uid(),title:'Präsentation',start:d(36),end:d(45),color:'p5'}],
+    milestones:[
+      {id:uid(),title:'Projektskizze abgeben',date:d(-1)},
+      {id:uid(),title:'Zwischenpräsentation',date:d(17)},
+      {id:uid(),title:'Ausstellung am Elternabend',date:d(44)}],
+    steps:[
+      {id:uid(),text:'Gruppen teilen ihre Rechercheergebnisse im Plenum',date:d(-2),who:'Klasse',done:true},
+      {id:uid(),text:'Materialliste und Budget mit der Schulleitung abklären',date:d(3),who:'Lehrperson',done:false},
+      {id:uid(),text:'Jede Gruppe skizziert ihren Teil des Hochbeets',date:d(9),who:'Gruppen',done:false},
+      {id:uid(),text:'Giessplan für die Herbstferien erstellen',date:d(20),who:'Gruppe Pflege',done:false}]};
+}
+function blankProject(){
+  const t=todayMs();
+  return {id:uid(),name:'Neues Projekt',klasse:'',fach:'',lehrperson:'',start:iso(t),end:iso(t+42*DAY),notes:'',phases:[],milestones:[],steps:[]};
+}
+
+/* ---------- Speicher ---------- */
+let projects=[], cur=null, db=null, userId=null, mode='local';
+const LS='projekt-zeitstrahl-v1';
+function lsLoad(){try{return JSON.parse(localStorage.getItem(LS)||'[]')}catch(e){return []}}
+function lsSave(){try{localStorage.setItem(LS,JSON.stringify(projects.filter(p=>!p.example)))}catch(e){}}
+function lsLast(v){try{if(v===undefined)return localStorage.getItem(LS+'-last');localStorage.setItem(LS+'-last',v)}catch(e){return null}}
+
+let saveTimer=null, writing=Promise.resolve();
+function setSaveState(t){$('saveState').textContent=t}
+function scheduleSave(){
+  if(!cur)return;
+  if(cur.example){ // Beispiel wird beim ersten Bearbeiten zum eigenen Projekt
+    cur.example=false; cur.id=uid(); $('exTag').hidden=true; renderSelect();
+  }
+  cur.updatedAt=Date.now();
+  setSaveState('Wird gespeichert …');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(persist,600);
+}
+function persist(){
+  const p=JSON.parse(JSON.stringify(cur));
+  lsSave(); lsLast(p.id);
+  if(mode==='db'){
+    writing=writing.then(()=>db.collection('data/users/'+userId).doc(p.id).set(p))
+      .then(()=>setSaveState('Gespeichert'))
+      .catch(()=>setSaveState('Nur auf diesem Gerät gespeichert'));
+  }else setSaveState('Auf diesem Gerät gespeichert');
+}
+function removeProject(p){
+  projects=projects.filter(x=>x.id!==p.id); lsSave();
+  if(mode==='db'&&!p.example){writing=writing.then(()=>db.collection('data/users/'+userId).doc(p.id).delete()).catch(()=>{})}
+  if(!projects.length)projects=[exampleProject()];
+  cur=projects[0]; renderAll();
+}
+
+async function initStore(){
+  projects=lsLoad();
+  try{
+    if(window.claude&&window.claude.use){
+      const [d,u]=await Promise.all([claude.use('db'),claude.use('user')]);
+      if(d&&u){const id=await u.id(); if(id){db=d;userId=id;mode='db'}}
+    }
+  }catch(e){}
+  if(mode==='db'){
+    try{
+      const snap=await Promise.race([db.collection('data/users/'+userId).get(),new Promise((_,r)=>setTimeout(()=>r('t'),10000))]);
+      const remote=snap.docs.filter(s=>s.exists).map(s=>s.data());
+      if(remote.length){
+        const ids=new Set(remote.map(p=>p.id));
+        projects=remote.concat(projects.filter(p=>!ids.has(p.id)));
+      }
+    }catch(e){mode='local'}
+  }
+  if(!projects.length)projects=[exampleProject()];
+  projects.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  const last=lsLast();
+  const keep=cur&&!cur.example&&projects.find(p=>p.id===cur.id);
+  cur=keep||projects.find(p=>p.id===last)||projects[0];
+  renderAll();
+  setSaveState(mode==='db'?'Mit deinem Konto gespeichert':'');
+}
+
+/* ---------- Kopf ---------- */
+const metaMap={pName:'name',pKlasse:'klasse',pFach:'fach',pLp:'lehrperson',pStart:'start',pEnd:'end',pNotes:'notes'};
+Object.entries(metaMap).forEach(([id,key])=>{
+  $(id).addEventListener('input',e=>{cur[key]=e.target.value; if(key==='name')renderSelect(); renderTimeline(); renderProgress(); scheduleSave()});
+});
+function renderHead(){
+  Object.entries(metaMap).forEach(([id,key])=>{$(id).value=cur[key]||''});
+  $('exTag').hidden=!cur.example;
+}
+function progressInfo(){
+  const s=toMs(cur.start),e=toMs(cur.end),t=todayMs();
+  if(isNaN(s)||isNaN(e)||e<=s)return null;
+  const pct=Math.max(0,Math.min(100,Math.round((t-s)/(e-s)*100)));
+  const weeks=Math.ceil((e-s+DAY)/(7*DAY));
+  const wk=Math.max(0,Math.min(weeks,Math.floor((t-s)/(7*DAY))+1));
+  const left=Math.round((e-t)/DAY);
+  return {pct,weeks,wk,left,t,s,e};
+}
+function renderProgress(){
+  const p=progressInfo();
+  if(!p){$('progNum').innerHTML='–';$('progBar').style.width='0';$('progSub').textContent='Start und Ende festlegen';return}
+  $('progNum').innerHTML=p.pct+'<small>%</small>';
+  $('progBar').style.width=p.pct+'%';
+  $('progSub').textContent= p.t<p.s?'Startet in '+Math.round((p.s-p.t)/DAY)+' Tagen · '+p.weeks+' Wochen'
+    : p.t>p.e?'Abgeschlossen · '+p.weeks+' Wochen'
+    : 'Woche '+p.wk+' von '+p.weeks+' · noch '+p.left+' Tage';
+}
+function renderSelect(){
+  $('projSel').innerHTML=projects.map(p=>`<option value="${esc(p.id)}"${p===cur?' selected':''}>${esc(p.name||'Ohne Titel')}${p.example?' (Beispiel)':''}</option>`).join('');
+}
+$('projSel').addEventListener('change',e=>{cur=projects.find(p=>p.id===e.target.value)||cur;lsLast(cur.id);renderAll()});
+$('newProj').addEventListener('click',()=>{
+  projects=projects.filter(p=>!p.example);
+  const p=blankProject(); projects.unshift(p); cur=p; renderAll(); scheduleSave(); $('pName').select();
+});
+
+/* ---------- Phasen & Meilensteine ---------- */
+function rowDelete(onYes){
+  const b=document.createElement('button');b.type='button';b.className='btn ghost';b.setAttribute('aria-label','Löschen');b.innerHTML='&times;';b.style.padding='4px 8px';b.style.fontSize='18px';
+  b.addEventListener('click',onYes);return b;
+}
+function renderPhases(){
+  const box=$('phaseRows');box.innerHTML='';
+  if(!cur.phases.length)box.innerHTML='<p class="hint">Noch keine Phasen. Phasen sind Zeiträume, z. B. „Recherche“ oder „Umsetzung“.</p>';
+  cur.phases.forEach((ph,i)=>{
+    const r=document.createElement('div');r.className='row phase';
+    r.innerHTML=`<button type="button" class="swatch" title="Farbe wechseln" aria-label="Farbe wechseln" style="background:var(--${ph.color})"></button>
+      <input type="text" id="ph-t-${ph.id}" value="${esc(ph.title)}" aria-label="Titel der Phase">
+      <input type="date" class="d" id="ph-s-${ph.id}" value="${esc(ph.start)}" aria-label="Beginn">
+      <input type="date" class="d" id="ph-e-${ph.id}" value="${esc(ph.end)}" aria-label="Ende">`;
+    r.querySelector('.swatch').addEventListener('click',e=>{ph.color=PHASE_KEYS[(PHASE_KEYS.indexOf(ph.color)+1)%5];e.target.style.background=`var(--${ph.color})`;renderTimeline();scheduleSave()});
+    r.querySelector(`#ph-t-${ph.id}`).addEventListener('input',e=>{ph.title=e.target.value;renderTimeline();scheduleSave()});
+    r.querySelector(`#ph-s-${ph.id}`).addEventListener('change',e=>{ph.start=e.target.value;renderTimeline();scheduleSave()});
+    r.querySelector(`#ph-e-${ph.id}`).addEventListener('change',e=>{ph.end=e.target.value;renderTimeline();scheduleSave()});
+    r.appendChild(rowDelete(()=>{cur.phases=cur.phases.filter(x=>x!==ph);renderPhases();renderTimeline();scheduleSave()}));
+    box.appendChild(r);
+  });
+}
+function renderMs(){
+  const box=$('msRows');box.innerHTML='';
+  if(!cur.milestones.length)box.innerHTML='<p class="hint">Noch keine Meilensteine. Ein Meilenstein ist ein fester Termin, z. B. eine Abgabe.</p>';
+  cur.milestones.sort((a,b)=>toMs(a.date)-toMs(b.date)).forEach(m=>{
+    const r=document.createElement('div');r.className='row ms';
+    r.innerHTML=`<span class="ms-mark" aria-hidden="true"></span>
+      <input type="text" id="ms-t-${m.id}" value="${esc(m.title)}" aria-label="Titel des Meilensteins">
+      <input type="date" class="d" id="ms-d-${m.id}" value="${esc(m.date)}" aria-label="Datum">`;
+    r.querySelector(`#ms-t-${m.id}`).addEventListener('input',e=>{m.title=e.target.value;renderTimeline();scheduleSave()});
+    r.querySelector(`#ms-d-${m.id}`).addEventListener('change',e=>{m.date=e.target.value;renderMs();renderTimeline();scheduleSave()});
+    r.appendChild(rowDelete(()=>{cur.milestones=cur.milestones.filter(x=>x!==m);renderMs();renderTimeline();scheduleSave()}));
+    box.appendChild(r);
+  });
+}
+$('addPhase').addEventListener('click',()=>{
+  const last=cur.phases[cur.phases.length-1];
+  const s=last&&last.end?last.end:cur.start||iso(todayMs());
+  cur.phases.push({id:uid(),title:'Neue Phase',start:s,end:iso(toMs(s)+7*DAY),color:PHASE_KEYS[cur.phases.length%5]});
+  renderPhases();renderTimeline();scheduleSave();
+  const ids=cur.phases[cur.phases.length-1].id; const el=$('ph-t-'+ids); el&&el.select();
+});
+$('addMs').addEventListener('click',()=>{
+  const m={id:uid(),title:'Neuer Meilenstein',date:iso(todayMs())};
+  cur.milestones.push(m);renderMs();renderTimeline();scheduleSave();const el=$('ms-t-'+m.id);el&&el.select();
+});
+
+/* ---------- Nächste Schritte ---------- */
+function sortedSteps(){return cur.steps.slice().sort((a,b)=>(toMs(a.date)||0)-(toMs(b.date)||0))}
+function renderSteps(){
+  const box=$('stepList');box.innerHTML='';
+  const list=sortedSteps(), t=todayMs();
+  const open=list.filter(s=>!s.done).length;
+  $('stepCount').textContent=list.length?`${open} offen · ${list.length-open} erledigt`:'';
+  if(!list.length){box.innerHTML='<p class="hint" style="padding:12px 0">Noch keine Schritte. Beschreibe oben, was als Nächstes passiert – der Schritt erscheint sofort auf dem Zeitstrahl.</p>';return}
+  list.forEach((s,i)=>{
+    const late=!s.done&&toMs(s.date)<t;
+    const el=document.createElement('div');el.className='step'+(s.done?' done':'');
+    el.innerHTML=`<button type="button" class="step-num" aria-pressed="${s.done}" aria-label="Schritt ${i+1} ${s.done?'als offen markieren':'als erledigt markieren'}">${s.done?'✓':i+1}</button>
+      <div style="min-width:0"><div class="step-text">${esc(s.text)}</div>
+      <div class="step-meta"><span class="mono">${fmt(s.date)} · KW ${isoWeek(toMs(s.date))||'–'}</span>${s.who?`<span class="chip">${esc(s.who)}</span>`:''}${late?'<span class="chip late">überfällig</span>':''}${s.done?'<span class="chip">erledigt</span>':''}</div></div>`;
+    el.querySelector('.step-num').addEventListener('click',()=>{s.done=!s.done;renderSteps();renderTimeline();scheduleSave()});
+    el.appendChild(rowDelete(()=>{cur.steps=cur.steps.filter(x=>x!==s);renderSteps();renderTimeline();scheduleSave()}));
+    box.appendChild(el);
+  });
+}
+$('stepForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const text=$('sText').value.trim(), date=$('sDate').value;
+  if(!text||!date)return;
+  cur.steps.push({id:uid(),text,date,who:$('sWho').value.trim(),done:false});
+  $('sText').value='';$('sWho').value='';
+  renderSteps();renderTimeline();scheduleSave();toast('Schritt hinzugefügt');
+});
+
+/* ---------- Zeitstrahl (SVG) ---------- */
+function range(){
+  let s=toMs(cur.start),e=toMs(cur.end);
+  const all=[...cur.phases.flatMap(p=>[toMs(p.start),toMs(p.end)]),...cur.milestones.map(m=>toMs(m.date)),...cur.steps.map(x=>toMs(x.date))].filter(n=>!isNaN(n));
+  if(isNaN(s))s=all.length?Math.min(...all):todayMs();
+  if(isNaN(e))e=all.length?Math.max(...all):s+42*DAY;
+  if(all.length){s=Math.min(s,...all);e=Math.max(e,...all)}
+  if(e-s<14*DAY)e=s+14*DAY;
+  // auf Montag / Sonntag ausrichten
+  const sd=(new Date(s).getUTCDay()+6)%7; s-=sd*DAY;
+  const ed=(new Date(e).getUTCDay()+6)%7; e+=(6-ed)*DAY+DAY;
+  return {s,e};
+}
+function layout(W){
+  const {s,e}=range();
+  const x=ms=>Math.round(16+(ms-s)/(e-s)*(W-32));
+  return {s,e,x};
+}
+function renderTimeline(){
+  const svg=$('tl');
+  const avail=svg.parentElement.clientWidth-40;
+  const {s,e}=range();
+  const weeks=(e-s)/(7*DAY);
+  const W=Math.max(avail,Math.min(2400,weeks*58),640);
+  const {x}=layout(W);
+  const steps=sortedSteps();
+  const msList=cur.milestones.filter(m=>!isNaN(toMs(m.date))).sort((a,b)=>toMs(a.date)-toMs(b.date));
+  const phases=cur.phases.filter(p=>!isNaN(toMs(p.start))&&!isNaN(toMs(p.end)));
+  const axisY=44, msTop=axisY+10, msH=msList.length?64:0, phTop=msTop+msH+8, rowH=34;
+  const phH=phases.length*rowH, stTop=phTop+phH+(phases.length?14:0), stH=steps.length?66:0;
+  const H=stTop+stH+10;
+  let o='';
+  // Monate
+  let m=new Date(s); m=new Date(Date.UTC(m.getUTCFullYear(),m.getUTCMonth(),1));
+  while(m.getTime()<e){
+    const ms=m.getTime(); const xx=Math.max(16,x(ms));
+    o+=`<text x="${xx+2}" y="14" font-size="12" font-weight="600" fill="var(--ink)">${MONTHS_LONG[m.getUTCMonth()]} ${m.getUTCFullYear()}</text>`;
+    if(ms>s)o+=`<line x1="${x(ms)}" x2="${x(ms)}" y1="2" y2="${H}" stroke="var(--line-strong)" stroke-width="1"/>`;
+    m=new Date(Date.UTC(m.getUTCFullYear(),m.getUTCMonth()+1,1));
+  }
+  // Wochen
+  for(let w=s;w<e;w+=7*DAY){
+    const zebra=Math.round((w-s)/(7*DAY))%2===0;
+    if(zebra)o+=`<rect x="${x(w)}" y="${axisY}" width="${x(w+7*DAY)-x(w)}" height="${H-axisY}" fill="var(--surface)"/>`;
+    o+=`<text x="${(x(w)+x(w+7*DAY))/2}" y="${axisY-8}" font-size="10.5" text-anchor="middle" fill="var(--muted)" style="font-family:var(--font-mono)">KW ${isoWeek(w)}</text>`;
+  }
+  o+=`<line x1="16" x2="${W-16}" y1="${axisY}" y2="${axisY}" stroke="var(--ink)" stroke-width="1.5"/>`;
+  // Projektgrenzen
+  [cur.start,cur.end].forEach((d,i)=>{const v=toMs(d);if(!isNaN(v)){const xx=x(i?v+DAY:v);o+=`<line x1="${xx}" x2="${xx}" y1="${axisY}" y2="${H}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="2 3"/>`}});
+  // Meilensteine
+  msList.forEach((mm,i)=>{
+    const xx=x(toMs(mm.date)+DAY/2), lvl=i%2, ly=msTop+14+lvl*24;
+    o+=`<line x1="${xx}" x2="${xx}" y1="${ly+6}" y2="${H}" stroke="var(--ink)" stroke-width="1" opacity=".35"/>`;
+    o+=`<rect x="${xx-6}" y="${ly-6}" width="12" height="12" transform="rotate(45 ${xx} ${ly})" fill="var(--ink)"/>`;
+    const anchorEnd=xx>W-180;
+    o+=`<text x="${anchorEnd?xx-12:xx+12}" y="${ly+4}" font-size="12.5" font-weight="600" text-anchor="${anchorEnd?'end':'start'}" fill="var(--ink)">${esc(mm.title)} <tspan fill="var(--muted)" font-weight="400">${fmt(mm.date)}</tspan></text>`;
+  });
+  // Phasen
+  phases.forEach((p,i)=>{
+    const a=x(toMs(p.start)), b=Math.max(x(toMs(p.end)+DAY),a+6), y=phTop+i*rowH;
+    o+=`<rect x="${a}" y="${y}" width="${b-a}" height="${rowH-8}" rx="6" fill="var(--${p.color})"/>`;
+    const label=esc(p.title), est=p.title.length*6.8+20;
+    if(b-a>est) o+=`<text x="${a+10}" y="${y+17}" font-size="12.5" font-weight="600" fill="#fff">${label}</text>`;
+    else if(b+est<W) o+=`<text x="${b+8}" y="${y+17}" font-size="12.5" font-weight="600" fill="var(--ink)">${label}</text>`;
+    else o+=`<text x="${a-8}" y="${y+17}" font-size="12.5" font-weight="600" text-anchor="end" fill="var(--ink)">${label}</text>`;
+  });
+  // Schritte
+  if(steps.length){
+    const y=stTop+16;
+    o+=`<text x="16" y="${stTop-2}" font-size="10.5" fill="var(--muted)" font-weight="600" letter-spacing=".08em">NÄCHSTE SCHRITTE</text>`;
+    o+=`<line x1="16" x2="${W-16}" y1="${y}" y2="${y}" stroke="var(--line-strong)" stroke-width="2"/>`;
+    const placed=[];
+    steps.forEach((st,i)=>{
+      let xx=x(toMs(st.date)+DAY/2); let lvl=0;
+      while(placed.some(pp=>pp.l===lvl&&Math.abs(pp.x-xx)<24))lvl++;
+      placed.push({x:xx,l:lvl});
+      const cy=y+lvl*24;
+      if(lvl)o+=`<line x1="${xx}" x2="${xx}" y1="${y}" y2="${cy}" stroke="var(--line-strong)"/>`;
+      o+=`<circle cx="${xx}" cy="${cy}" r="10" fill="${st.done?'var(--accent)':'var(--ink)'}"/>`;
+      o+=`<text x="${xx}" y="${cy+4}" font-size="11" text-anchor="middle" fill="${st.done?'var(--on-accent)':'var(--bg)'}" style="font-family:var(--font-mono)">${st.done?'✓':i+1}</text><title>${esc(st.text)}</title>`;
+    });
+  }
+  // Heute
+  const t=todayMs();
+  if(t>=s&&t<e){
+    const xx=x(t+DAY/2);
+    o+=`<line x1="${xx}" x2="${xx}" y1="${axisY-4}" y2="${H}" stroke="var(--accent)" stroke-width="2"/>`;
+    o+=`<rect x="${xx-22}" y="${axisY-4}" width="44" height="16" rx="8" fill="var(--accent)"/><text x="${xx}" y="${axisY+8}" font-size="10.5" font-weight="600" text-anchor="middle" fill="var(--on-accent)">Heute</text>`;
+  }
+  const empty=!phases.length&&!msList.length&&!steps.length;
+  if(empty)o+=`<text x="${W/2}" y="${axisY+40}" text-anchor="middle" font-size="13" fill="var(--muted)">Füge unten Phasen, Meilensteine oder nächste Schritte hinzu.</text>`;
+  const HH=empty?axisY+70:H;
+  svg.setAttribute('viewBox',`0 0 ${W} ${HH}`);svg.setAttribute('width',W);svg.setAttribute('height',HH);
+  svg.innerHTML=o;
+}
+window.addEventListener('resize',()=>{clearTimeout(window.__rt);window.__rt=setTimeout(renderTimeline,120)});
+
+function renderAll(){renderSelect();renderHead();renderProgress();renderPhases();renderMs();renderSteps();renderTimeline()}
+
+function toast(msg){const t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,2600)}
+
+/* ---------- PDF ---------- */
+function hexRgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function buildPdf(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const PW=297,PH=210,M=14;
+  const INK=[22,32,28],MUTED=[102,113,108],LINE=[221,227,224],SURF=[244,247,245],ACC=hexRgb('#0e7a5f');
+  const fill=c=>doc.setFillColor(...c), stroke=c=>doc.setDrawColor(...c), col=c=>doc.setTextColor(...c);
+  const font=(w,s)=>{doc.setFont('helvetica',w);doc.setFontSize(s)};
+  const t=todayMs(), prog=progressInfo();
+  let page=1;
+  const footer=()=>{font('normal',7.5);col(MUTED);doc.text('Projekt-Zeitstrahl · Stand '+fmtLong(t),M,PH-7);doc.text('Seite '+page,PW-M,PH-7,{align:'right'})};
+
+  // Kopfband
+  fill(INK);doc.rect(0,0,PW,40,'F');
+  fill(ACC);doc.rect(0,0,6,40,'F');
+  font('bold',7.5);doc.setTextColor(150,214,192);
+  doc.text('PROJEKT-ZEITSTRAHL',M,11,{charSpace:.6});
+  font('bold',21);doc.setTextColor(255,255,255);
+  const title=doc.splitTextToSize(cur.name||'Ohne Titel',170);doc.text(title[0],M,22);
+  font('normal',9.5);doc.setTextColor(200,212,207);
+  const meta=[cur.klasse&&'Klasse '+cur.klasse,cur.fach,cur.lehrperson,(cur.start&&cur.end)?fmtLong(toMs(cur.start))+' – '+fmtLong(toMs(cur.end)):null].filter(Boolean).join('   ·   ');
+  doc.text(meta||' ',M,31);
+  // Fortschritt
+  if(prog){
+    const bx=PW-M-62;
+    font('bold',22);doc.setTextColor(255,255,255);doc.text(prog.pct+' %',bx,22);
+    font('normal',8);doc.setTextColor(200,212,207);
+    doc.text(prog.t<prog.s?'Projekt startet in '+Math.round((prog.s-prog.t)/DAY)+' Tagen':prog.t>prog.e?'Projekt abgeschlossen':'Woche '+prog.wk+' von '+prog.weeks+' · noch '+prog.left+' Tage',bx,28);
+    doc.setFillColor(60,74,68);doc.roundedRect(bx,31.5,62,2.6,1.3,1.3,'F');
+    fill(hexRgb('#3cc29a'));if(prog.pct>0)doc.roundedRect(bx,31.5,Math.max(2.6,62*prog.pct/100),2.6,1.3,1.3,'F');
+  }
+
+  // Zeitstrahl
+  const {s,e}=range();
+  const X0=M,X1=PW-M, xx=ms=>X0+(ms-s)/(e-s)*(X1-X0);
+  const steps=sortedSteps();
+  const msList=cur.milestones.filter(m=>!isNaN(toMs(m.date))).sort((a,b)=>toMs(a.date)-toMs(b.date));
+  const phases=cur.phases.filter(p=>!isNaN(toMs(p.start))&&!isNaN(toMs(p.end)));
+  let y=50;
+  font('bold',11);col(INK);doc.text('Zeitstrahl',M,y);y+=8;
+  const axisY=y+7;
+  const rowH=Math.min(7.5,phases.length?Math.max(5,40/phases.length):7.5);
+  const msTop=axisY+3, msH=msList.length?15:0, phTop=msTop+msH+2, stTop=phTop+phases.length*rowH+(phases.length?3:0);
+  const bottom=stTop+(steps.length?14:0);
+  // Wochen-Zebra & KW
+  for(let w=s;w<e;w+=7*DAY){
+    const zi=Math.round((w-s)/(7*DAY));
+    if(zi%2===0){fill(SURF);doc.rect(xx(w),axisY,xx(w+7*DAY)-xx(w),bottom-axisY,'F')}
+    const wpx=xx(w+7*DAY)-xx(w);
+    if(wpx>7||zi%2===0){font('normal',6);col(MUTED);doc.text(String(isoWeek(w)),(xx(w)+xx(w+7*DAY))/2,axisY-1.6,{align:'center'})}
+  }
+  // Monate
+  let mo=new Date(Date.UTC(new Date(s).getUTCFullYear(),new Date(s).getUTCMonth(),1));
+  while(mo.getTime()<e){
+    const ms=mo.getTime();
+    if(ms>s){stroke(LINE);doc.setLineWidth(.25);doc.line(xx(ms),y-4,xx(ms),bottom)}
+    font('bold',8);col(INK);doc.text(MONTHS_LONG[mo.getUTCMonth()]+' '+mo.getUTCFullYear(),Math.max(X0,xx(ms))+1,y-1);
+    mo=new Date(Date.UTC(mo.getUTCFullYear(),mo.getUTCMonth()+1,1));
+  }
+  font('normal',6);col(MUTED);doc.text('KW',X0-1,axisY-1.6,{align:'right'});
+  stroke(INK);doc.setLineWidth(.5);doc.line(X0,axisY,X1,axisY);
+  // Meilensteine
+  msList.forEach((m,i)=>{
+    const cx=xx(toMs(m.date)+DAY/2), ly=msTop+4+(i%2)*6.5;
+    stroke([180,190,185]);doc.setLineWidth(.2);doc.line(cx,ly,cx,bottom);
+    fill(INK);const r=1.9;doc.triangle(cx,ly-r,cx+r,ly,cx-r,ly,'F');doc.triangle(cx,ly+r,cx+r,ly,cx-r,ly,'F');
+    font('bold',7.5);col(INK);
+    const label=m.title+'  '+fmt(m.date);
+    const right=cx>X1-55;
+    doc.text(label,right?cx-3:cx+3,ly+1.1,{align:right?'right':'left'});
+  });
+  // Phasen
+  phases.forEach((p,i)=>{
+    const a=xx(toMs(p.start)), b=Math.max(xx(toMs(p.end)+DAY),a+2), py=phTop+i*rowH;
+    fill(hexRgb(PDF_HEX[p.color]||PDF_HEX.p1));doc.roundedRect(a,py,b-a,rowH-1.6,1.4,1.4,'F');
+    font('bold',7.5);const tw=doc.getTextWidth(p.title);
+    const ty=py+(rowH-1.6)/2+1.1;
+    if(b-a>tw+5){doc.setTextColor(255,255,255);doc.text(p.title,a+2.5,ty)}
+    else if(b+tw+3<X1){col(INK);doc.text(p.title,b+2,ty)}
+    else{col(INK);doc.text(p.title,a-2,ty,{align:'right'})}
+  });
+  // Schritte
+  if(steps.length){
+    const sy=stTop+5;
+    stroke([200,208,204]);doc.setLineWidth(.5);doc.line(X0,sy,X1,sy);
+    const placed=[];
+    steps.forEach((st,i)=>{
+      const cx=xx(toMs(st.date)+DAY/2);let l=0;
+      while(placed.some(pp=>pp.l===l&&Math.abs(pp.x-cx)<5.5))l++;
+      placed.push({x:cx,l});const cy=sy+l*5.5;
+      if(l){doc.setLineWidth(.2);doc.line(cx,sy,cx,cy)}
+      fill(st.done?ACC:INK);doc.circle(cx,cy,2.3,'F');
+      font('bold',6.5);doc.setTextColor(255,255,255);doc.text(String(i+1),cx,cy+.9,{align:'center'});
+    });
+  }
+  // Heute
+  if(t>=s&&t<e){
+    const cx=xx(t+DAY/2);stroke(ACC);doc.setLineWidth(.6);doc.line(cx,axisY-1,cx,bottom);
+    fill(ACC);doc.roundedRect(cx-6,axisY-1,12,4,2,2,'F');font('bold',6);doc.setTextColor(255,255,255);doc.text('Heute',cx,axisY+1.9,{align:'center'});
+  }
+
+  // Unterer Bereich: Schritte | Meilensteine + Notizen
+  let ly=Math.max(bottom+12,128);
+  const colW=(PW-2*M-12)*0.58, rx=M+colW+12, rw=PW-M-rx;
+  const newPage=()=>{footer();doc.addPage();page++;ly=M+6;return ly};
+  font('bold',11);col(INK);doc.text('Nächste Schritte',M,ly);
+  const open=steps.filter(x=>!x.done).length;
+  font('normal',8);col(MUTED);doc.text(open+' offen · '+(steps.length-open)+' erledigt',M+colW,ly,{align:'right'});
+  stroke(INK);doc.setLineWidth(.4);doc.line(M,ly+2.5,M+colW,ly+2.5);
+  let y1=ly+8;
+  if(!steps.length){font('normal',9);col(MUTED);doc.text('Noch keine Schritte erfasst.',M,y1)}
+  steps.forEach((st,i)=>{
+    font('normal',9);
+    const lines=doc.splitTextToSize(st.text,colW-48);
+    const h=Math.max(8,lines.length*4.2+3.5);
+    if(y1+h>PH-14){footer();doc.addPage();page++;y1=M+6}
+    fill(st.done?ACC:INK);doc.circle(M+2.6,y1+.6,2.6,'F');
+    font('bold',7);doc.setTextColor(255,255,255);doc.text(String(i+1),M+2.6,y1+1.6,{align:'center'});
+    font('normal',9);col(st.done?MUTED:INK);doc.text(lines,M+8,y1+1.5);
+    font('bold',8);col(INK);doc.text(fmt(st.date)+'  KW '+isoWeek(toMs(st.date)),M+colW,y1+1.5,{align:'right'});
+    font('normal',7.5);
+    const late=!st.done&&toMs(st.date)<t;
+    if(late)doc.setTextColor(194,65,45);else col(MUTED);
+    doc.text([st.who||'',st.done?'erledigt':late?'überfällig':'offen'].filter(Boolean).join(' · '),M+colW,y1+5.3,{align:'right'});
+    y1+=h;stroke(LINE);doc.setLineWidth(.2);doc.line(M+8,y1-2.2,M+colW,y1-2.2);
+  });
+
+  // rechte Spalte (auf Seite 1)
+  if(page>1){doc.setPage(1)}
+  let y2=ly;
+  font('bold',11);col(INK);doc.text('Meilensteine',rx,y2);
+  stroke(INK);doc.setLineWidth(.4);doc.line(rx,y2+2.5,rx+rw,y2+2.5);y2+=8;
+  if(!msList.length){font('normal',9);col(MUTED);doc.text('Keine Meilensteine.',rx,y2);y2+=6}
+  msList.forEach(m=>{
+    fill(toMs(m.date)<t?ACC:INK);const r=1.6,cx=rx+1.8,cy=y2+.4;doc.triangle(cx,cy-r,cx+r,cy,cx-r,cy,'F');doc.triangle(cx,cy+r,cx+r,cy,cx-r,cy,'F');
+    font('normal',9);col(INK);const tl=doc.splitTextToSize(m.title,rw-30);doc.text(tl[0],rx+6,y2+1.5);
+    font('bold',8);doc.text(fmt(m.date),rx+rw,y2+1.5,{align:'right'});
+    y2+=6.5;
+  });
+  if(cur.notes&&cur.notes.trim()&&y2<PH-30){
+    y2+=4;font('bold',11);col(INK);doc.text('Notizen',rx,y2);
+    stroke(INK);doc.setLineWidth(.4);doc.line(rx,y2+2.5,rx+rw,y2+2.5);y2+=8;
+    font('normal',8.5);col([60,70,66]);
+    const nl=doc.splitTextToSize(cur.notes.trim(),rw);
+    const max=Math.floor((PH-16-y2)/3.8);
+    doc.text(nl.slice(0,max),rx,y2);
+  }
+  // Fusszeilen
+  const total=doc.getNumberOfPages();
+  for(let i=1;i<=total;i++){doc.setPage(i);page=i;footer()}
+  return doc;
+}
+let downloads=null;
+$('pdfBtn').addEventListener('click',async()=>{
+  if(!window.jspdf){toast('Der PDF-Baustein konnte nicht geladen werden. Bitte die Seite neu laden.');return}
+  const doc=buildPdf();
+  const base=(cur.name||'Projekt').replace(/[^\wäöüÄÖÜß\- ]+/g,'').trim().replace(/\s+/g,'-')||'Projekt';
+  const filename='Zeitstrahl-'+base+'-'+iso(todayMs())+'.pdf';
+  const blob=doc.output('blob');
+  if(!downloads){try{downloads=window.claude&&await claude.use('downloads')}catch(e){downloads=null}}
+  if(downloads){
+    try{await downloads.save({filename,data:blob});toast('PDF gespeichert')}
+    catch(err){
+      if(err&&err.code==='declined')return;
+      if(err&&err.code==='rate_limited'){toast('Ein Speicherdialog ist schon offen.');return}
+      fallbackOpen(blob);
+    }
+  }else fallbackOpen(blob);
+});
+function fallbackOpen(blob){
+  try{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='Zeitstrahl.pdf';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+    toast('Falls kein Download startet: Seite in claude.ai öffnen und erneut exportieren.');
+  }catch(e){toast('PDF-Export ist in dieser Ansicht nicht verfügbar.')}
+}
+
+$('delProj').addEventListener('click',askDelete);
+function askDelete(){
+  const w=$('delWrap');
+  w.innerHTML=`<div class="confirm">„${esc(cur.name||'Ohne Titel')}“ endgültig löschen? <button type="button" class="btn" id="delYes" style="color:var(--danger);border-color:var(--danger)">Löschen</button><button type="button" class="btn" id="delNo">Abbrechen</button></div>`;
+  const reset=()=>{w.innerHTML='<button class="btn ghost" id="delProj" type="button" style="padding:0;font-size:13px">Projekt löschen</button>';$('delProj').addEventListener('click',askDelete)};
+  $('delYes').addEventListener('click',()=>{removeProject(cur);reset();toast('Projekt gelöscht')});
+  $('delNo').addEventListener('click',reset);
+}
+/* ---------- Start ---------- */
+$('sDate').value=iso(todayMs()+7*DAY);
+projects=lsLoad(); if(!projects.length)projects=[exampleProject()];
+cur=projects.find(p=>p.id===lsLast())||projects[0];
+renderAll();
+initStore();
+})();
+</script>
+
+</body></html>
